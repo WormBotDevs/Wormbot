@@ -7,10 +7,17 @@ import time
 import datetime
 import os
 import string
+import requests
+import jq
 
 load_dotenv()
+token = os.getenv("TOKEN")
+guild_id = os.getenv("GUILD_ID")
+confessions_channel_id = os.getenv("CONFESSIONS_CHANNEL_ID")
+logs_channel_id = os.getenv("LOGS_CHANNEL_ID")
 
-MY_GUILD = discord.Object(id=f'{os.getenv("GUILD_ID")}')
+
+MY_GUILD = discord.Object(id=guild_id)
 
 class MyClient(discord.Client):
     def __init__(self, *, intents: discord.Intents):
@@ -50,10 +57,6 @@ client = MyClient(intents=intents)
 async def on_ready():
     print(f'Logged in as {client.user} (ID: {client.user.id})')
 
-@client.event
-async def on_message(message):
-    print(f'[{time.ctime()}] Message from {message.author}: {message.content}')
-
 
 @client.tree.command()
 @app_commands.describe(
@@ -63,17 +66,44 @@ async def confess(interaction: discord.Interaction, confession: str):
     """Posts a confession."""
     await interaction.response.send_message(f'Confession acknowledged!', ephemeral=True)
     
-    confessions_channel = interaction.guild.get_channel(int(f'{os.getenv("CONFESSIONS_CHANNEL_ID")}'))
-    logs_channel = interaction.guild.get_channel(int(f'{os.getenv("LOGS_CHANNEL_ID")}'))
+    confessions_channel = interaction.guild.get_channel(int(confessions_channel_id))
+    logs_channel = interaction.guild.get_channel(int(logs_channel_id))
     embed = discord.Embed(title='Confession')
     log_embed = discord.Embed(title='Confession')
-    embed = embed.set_author(name='Anonymous')
+    embed.set_author(name='Anonymous')
     log_embed.set_author(name=interaction.user, icon_url=interaction.user.display_avatar.url)
-    log_embed.description = embed.description = confession
+    embed.description = confession
     log_embed.timestamp = embed.timestamp = datetime.datetime.now()
     
-    await confessions_channel.send(embed=embed)
+    sent_confession = await confessions_channel.send(embed=embed)
+    log_embed.description = f'{confession}\n\nhttps://discord.com/channels/{guild_id}/{confessions_channel_id}/{str(sent_confession.id)}'
     await logs_channel.send(embed=log_embed)
 
 
-client.run(f'{os.getenv("TOKEN")}')
+@client.tree.command()
+async def cat(interaction: discord.Interaction):
+    """Gives a cat."""
+    get = requests.get("https://api.thecatapi.com/v1/images/search")
+    print(f'Server response: {get.text}')
+    url = jq.compile('.[] | .url').input_text(get.text).text()
+    url = url.replace('"', '')
+    cat = discord.Embed(title='Cat')
+    cat.set_image(url=url)
+    
+    await interaction.response.send_message(embed=cat)
+
+
+@client.tree.command()
+async def dog(interaction: discord.Interaction):
+    """Gives a dog."""
+    get = requests.get("https://api.thedogapi.com/v1/images/search")
+    print(f'Server response: {get.text}')
+    url = jq.compile('.[] | .url').input_text(get.text).text()
+    url = url.replace('"', '')
+    dog = discord.Embed(title='Dog')
+    dog.set_image(url=url)
+
+    await interaction.response.send_message(embed=dog)
+
+
+client.run(token)
