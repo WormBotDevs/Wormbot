@@ -68,8 +68,8 @@ async def confess(interaction: discord.Interaction, confession: str):
     
     confessions_channel = interaction.guild.get_channel(int(confessions_channel_id))
     logs_channel = interaction.guild.get_channel(int(logs_channel_id))
-    embed = discord.Embed(title='Confession')
-    log_embed = discord.Embed(title='Confession')
+    embed = discord.Embed()
+    log_embed = discord.Embed()
     embed.set_author(name='Anonymous')
     log_embed.set_author(name=interaction.user, icon_url=interaction.user.display_avatar.url)
     embed.description = confession
