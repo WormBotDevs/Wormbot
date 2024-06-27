@@ -60,18 +60,23 @@ async def on_ready():
 
 @client.tree.command()
 @app_commands.describe(
-        confession='Your confession goes here',
+        confession="Your confession goes here",
+        name="A trip can be used",
 )
-async def confess(interaction: discord.Interaction, confession: str):
+async def confess(interaction: discord.Interaction, confession: str, name: Optional[str]):
     """Posts a confession."""
     await interaction.response.send_message(f'Confession acknowledged!', ephemeral=True)
-    
+
     confessions_channel = interaction.guild.get_channel(int(confessions_channel_id))
     logs_channel = interaction.guild.get_channel(int(logs_channel_id))
     embed = discord.Embed()
     log_embed = discord.Embed()
-    embed.set_author(name='Anonymous')
-    log_embed.set_author(name=interaction.user, icon_url=interaction.user.display_avatar.url)
+    if name:
+        embed.set_author(name=name)
+        log_embed.set_author(name=f'{interaction.user} ({name})', icon_url=interaction.user.display_avatar.url)
+    else:
+        embed.set_author(name='Anonymous')
+        log_embed.set_author(name=interaction.user, icon_url=interaction.user.display_avatar.url)
     embed.description = confession
     log_embed.timestamp = embed.timestamp = datetime.datetime.now()
     
