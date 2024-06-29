@@ -61,7 +61,7 @@ async def on_ready():
 @client.tree.command()
 @app_commands.describe(
         confession="Your confession goes here",
-        name="A trip can be used",
+        name="An optional display name",
 )
 async def confess(interaction: discord.Interaction, confession: str, name: Optional[str]):
     """Posts a confession."""
