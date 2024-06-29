@@ -61,7 +61,7 @@ async def on_ready():
 @client.tree.command()
 @app_commands.describe(
         confession="Your confession goes here",
-        name="A trip can be used",
+        name="An optional display name",
 )
 async def confess(interaction: discord.Interaction, confession: str, name: Optional[str]):
     """Posts a confession."""
@@ -71,12 +71,11 @@ async def confess(interaction: discord.Interaction, confession: str, name: Optio
     logs_channel = interaction.guild.get_channel(int(logs_channel_id))
     embed = discord.Embed()
     log_embed = discord.Embed()
-    if name:
-        embed.set_author(name=name)
-        log_embed.set_author(name=f'{interaction.user} ({name})', icon_url=interaction.user.display_avatar.url)
-    else:
-        embed.set_author(name='Anonymous')
-        log_embed.set_author(name=interaction.user, icon_url=interaction.user.display_avatar.url)
+
+    author = name if name else "Anonymous"
+    embed.set_author(name=author)
+    log_embed.set_author(name=f'{interaction.user} ({name})', icon_url=interaction.user.display_avatar.url)
+
     embed.description = confession
     log_embed.timestamp = embed.timestamp = datetime.datetime.now()
     
